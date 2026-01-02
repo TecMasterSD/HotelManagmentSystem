@@ -1,8 +1,9 @@
 // AdminHeader.jsx
 import React from "react";
-import { FaBell, FaUserCircle, FaSignOutAlt, FaBars, FaHamburger,  } from "react-icons/fa";
-import {Hamburger} from "lucide-react"
+import { FaBell, FaUserCircle, FaSignOutAlt, FaBars, FaHamburger, } from "react-icons/fa";
+import { Hamburger } from "lucide-react"
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const AdminHeader = ({
   title = "Dashboard",
@@ -11,20 +12,35 @@ const AdminHeader = ({
 }) => {
   const navigate = useNavigate();
 
-  const logoutHandler = () => {
-    localStorage.removeItem("token");
-    navigate("/auth/login");
-  };
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/logout",
+        {},
+        {
+          withCredentials: true, // 🔴 important if token is in cookie
+        }
+      );
 
+      // localStorage / redux clear (if used)
+      localStorage.removeItem("token");
+
+      navigate("/auth/login");
+
+      return response.data;
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
 
   return (
     <header className="w-full mb-4 px-3 sm:px-5 py-3 sm:py-4 bg-black/20 backdrop-blur-md border border-white/5 rounded-md shadow-xl">
       <div className="flex items-center justify-between gap-3">
-        
+
         {/* LEFT SECTION */}
         <div className="flex items-center gap-3 min-w-0">
-          
+
 
           {/* TITLE */}
           <div className="">
@@ -42,7 +58,7 @@ const AdminHeader = ({
 
         {/* RIGHT SECTION */}
         <div className="flex items-center gap-2 sm:gap-4">
-          
+
           {/* NOTIFICATION */}
           <button className="relative text-white/60 hover:text-[#D4AF37]">
             <FaBell size={16} />

@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaCalendarCheck, FaCreditCard, FaSignOutAlt, FaHome, FaHistory, FaTimes } from "react-icons/fa";
 import { logout } from "../../ReducState/AuthState/AuthState";
 import { fetchBooking } from "../../ReducState/BookingState/BookingState";
+import axios from "axios";
 
 const BACKEND_URL = "http://localhost:5000";
 
@@ -21,9 +22,25 @@ const UserDashboard = () => {
     else dispatch(fetchBooking());
   }, [user, dispatch, navigate]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/auth/login");
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/logout",
+        {},
+        {
+          withCredentials: true, // 🔴 important if token is in cookie
+        }
+      );
+
+      // localStorage / redux clear (if used)
+      localStorage.removeItem("token");
+
+      navigate("/auth/login");
+
+      return response.data;
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   const getInitials = (name) =>
@@ -35,7 +52,7 @@ const UserDashboard = () => {
   // ✅ Calculate discount for StatCard
   const hasDiscount = userBookings.some((b) => b.discountPercent > 0);
   const discountPercent = hasDiscount ? Math.max(...userBookings.map((b) => b.discountPercent || 0)) : 0;
-console.log(userBookings)
+  console.log(userBookings)
 
   return (
     <div className="py-18 min-h-screen flex bg-gradient-to-b from-[#0F1717] via-[#2a1e24] to-[#fce4ec]">
